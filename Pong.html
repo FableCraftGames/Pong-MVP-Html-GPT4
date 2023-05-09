@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game</title>
+    <style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        let paddleHeight = 100, paddleWidth = 10, ballSize = 10;
+
+        let player1 = { x: 25, y: canvas.height / 2 - paddleHeight / 2, score: 0 };
+        let player2 = { x: canvas.width - paddleWidth - 25, y: canvas.height / 2 - paddleHeight / 2, score: 0 };
+        let ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 5, dy: 5 };
+
+        function drawPaddle(x, y) {
+            ctx.fillStyle = "white";
+            ctx.fillRect(x, y, paddleWidth, paddleHeight);
+        }
+
+        function drawBall(x, y) {
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(x, y, ballSize, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawScore() {
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText(player1.score, canvas.width / 4, 50);
+            ctx.fillText(player2.score, (canvas.width / 4) * 3, 50);
+        }
+
+        function update() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            if (ball.y <= 0 || ball.y >= canvas.height) {
+                ball.dy = -ball.dy;
+            }
+
+            if (ball.x <= player1.x + paddleWidth && ball.y > player1.y && ball.y < player1.y + paddleHeight) {
+                ball.dx = -ball.dx;
+            } else if (ball.x >= player2.x - ballSize && ball.y > player2.y && ball.y < player2.y + paddleHeight) {
+                ball.dx = -ball.dx;
+            }
+
+            if (ball.x < 0) {
+                player2.score++;
+                resetBall();
+            } else if (ball.x > canvas.width) {
+                player1.score++;
+                resetBall();
+            }
+
+            function resetBall() {
+                ball.x = canvas.width / 2;
+                ball.y = canvas.height / 2;
+                ball.dx = -ball.dx;
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPaddle(player1.x, player1.y);
+            drawPaddle(player2.x, player2.y);
+            drawBall(ball.x, ball.y);
+            drawScore();
+        }
+
+        function movePaddle() {
+            let paddleSpeed = 3;
+            let keysPressed = {};
+
+            $(document).on("keydown", function (e) {
+                keysPressed[e.which] = true;
+            });
+
+            $(document).on("keyup", function (e) {
+                keysPressed[e.which] = false;
+            });
+
+            function updatePaddlePositions() {
+                
+                if (keysPressed[87] && player1.y > 0) {
+                    // W key
+                    player1.y -= paddleSpeed;
+                }
+                if (keysPressed[83] && player1.y < canvas.height - paddleHeight) {
+                    // S key
+                    player1.y += paddleSpeed;
+                }
+                if (keysPressed[38] && player2.y > 0) {
+                    // Up arrow key
+                    player2.y -= paddleSpeed;
+                }
+                if (keysPressed[40] && player2.y < canvas.height - paddleHeight) {
+                    // Down arrow key
+                    player2.y += paddleSpeed;
+                }
+                requestAnimationFrame(updatePaddlePositions);
+            }
+
+            updatePaddlePositions();
+        }
+
+
+        function gameLoop() {
+            update();
+            draw();
+            //movePaddle();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        gameLoop();
+
+        movePaddle();
+    });
+
+</script>
+</body>
+</html>
+
+
+
